@@ -6,7 +6,7 @@ from scipy.optimize import fsolve
 # Set plotting style
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({
-    'font.size': 11,
+    'font.size': 18,
     'font.family': 'serif',
     'font.serif': ['Palatino', 'Times New Roman', 'DejaVu Serif'],
     'axes.linewidth': 1.2,
@@ -132,9 +132,9 @@ def create_detailed_comparison():
                        linewidth=2, alpha=alpha,
                        label=r'damped $\gamma=%s$ for $K = %s K_0^*$' % (gamma, K_frac))
     
-    ax.set_xlabel(r'$t$ [-]', fontsize=13, fontweight='bold')
-    ax.set_ylabel(r'displacement [-]', fontsize=13, fontweight='bold')
-    ax.set_title(r'$\xi = 0$, $K_0^* = 0.203632188...$', fontsize=13, fontweight='bold')
+    ax.set_xlabel(r'$t$ [-]', fontsize=18, fontweight='bold')
+    ax.set_ylabel(r'displacement [-]', fontsize=18, fontweight='bold')
+    ax.set_title(r'$\xi = 0$, $K_0^* = 0.203632188...$', fontsize=18, fontweight='bold')
     
     ax.grid(True, alpha=0.7, linewidth=0.8)
     ax.set_axisbelow(True)
@@ -143,7 +143,7 @@ def create_detailed_comparison():
     ax.set_xticks(np.arange(0, 26, 5))
     ax.set_yticks(np.arange(0, 0.8, 0.1))
     
-    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10,
+    ax.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=14,
              frameon=True, fancybox=True, shadow=True)
     
     for spine in ax.spines.values():
@@ -160,28 +160,34 @@ def create_amplitude_vs_excitation():
     fig, ax = plt.subplots(figsize=(9, 6))
     K_range = np.linspace(0.1, 0.95, 20) * analyzer.K_star_approx
     max_amplitudes_undamped = []
-    max_amplitudes_damped = []
+    max_amplitudes_damped_005 = []
+    max_amplitudes_damped_01 = []
     
     for K in K_range:
         a = analyzer.galerkin_coefficient_a(K)
         if a is not None:
             max_amplitudes_undamped.append(2*a)
-            y_damped = analyzer.solve_damped(np.linspace(0, 20, 800), K, 0.05)
-            max_amplitudes_damped.append(np.max(y_damped) if len(y_damped) > 0 else 0)
+            y_damped_005 = analyzer.solve_damped(np.linspace(0, 20, 800), K, 0.05)
+            max_amplitudes_damped_005.append(np.max(y_damped_005) if len(y_damped_005) > 0 else 0)
+            y_damped_01 = analyzer.solve_damped(np.linspace(0, 20, 800), K, 0.1)
+            max_amplitudes_damped_01.append(np.max(y_damped_01) if len(y_damped_01) > 0 else 0)
         else:
             max_amplitudes_undamped.append(0)
-            max_amplitudes_damped.append(0)
+            max_amplitudes_damped_005.append(0)
+            max_amplitudes_damped_01.append(0)
     
     ax.plot(K_range/analyzer.K_star_approx, max_amplitudes_undamped, 'k-', 
-            linewidth=2, label=r'Undamped max amplitude')
-    ax.plot(K_range/analyzer.K_star_approx, max_amplitudes_damped, 'r--', 
-            linewidth=2, label=r'Damped max amplitude ($\gamma=0.05$)')
-    ax.axvline(x=1.0, color='gray', linestyle=':', alpha=0.7, label=r'Pull-in threshold')
+            linewidth=2, label=r'Undamped max displacement')
+    ax.plot(K_range/analyzer.K_star_approx, max_amplitudes_damped_005, 'r--', 
+            linewidth=2, label=r'Damped max displacement ($\gamma=0.05$)')
+    ax.plot(K_range/analyzer.K_star_approx, max_amplitudes_damped_01, 'b:', 
+            linewidth=2, label=r'Damped max displacement ($\gamma=0.1$)')
+    ax.axvline(x=1.0, color='gray', linestyle=':', alpha=0.7)
     
-    ax.set_xlabel(r'$K/K_0^*$ [-]', fontsize=12)
-    ax.set_ylabel(r'Maximum Amplitude [-]', fontsize=12)
-    ax.set_title(r'Amplitude vs Excitation Parameter', fontsize=12)
-    ax.legend(fontsize=10)
+    ax.set_xlabel(r'$K/K_0^*$ [-]', fontsize=18)
+    ax.set_ylabel(r'Maximum Displacement [-]', fontsize=18)
+    ax.set_title(r'Displacement vs Excitation Parameter', fontsize=18)
+    ax.legend(fontsize=14)
     ax.grid(True, alpha=0.7)
     plt.tight_layout()
     plt.savefig('figs/amplitude_vs_excitation.png', dpi=300, bbox_inches='tight')
@@ -191,7 +197,7 @@ def create_ode_vs_galerkin_damped():
     """Create ODE vs Galerkin comparison for damped case"""
     analyzer = MagMEMSAnalyzer(xi=0.0)
     
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
     t_comp = np.linspace(0, 100, 3000)
     
     test_cases = [
@@ -208,26 +214,26 @@ def create_ode_vs_galerkin_damped():
         y_ode = analyzer.solve_damped(t_comp, K, gamma)
         y_gal = analyzer.damped_galerkin_solution(t_comp, K, gamma)
         
-        ax1.plot(t_comp, y_ode, '--', color=color, linewidth=2,
+        ax1.plot(t_comp, y_ode, '--', color=color, linewidth=1.5, alpha=0.5,
                 label=r'ODE: $K=%.3fK_0^*$, $\gamma=%.2f$' % (K/analyzer.K_star_approx, gamma))
-        ax1.plot(t_comp, y_gal, '-', color=color, linewidth=2, alpha=0.7,
+        ax1.plot(t_comp, y_gal, '-', color=color, linewidth=1.5, alpha=0.5,
                 label=r'Galerkin: $K=%.3fK_0^*$, $\gamma=%.2f$' % (K/analyzer.K_star_approx, gamma))
         
         error = np.abs(y_ode - y_gal)
-        ax2.plot(t_comp, error, '-', color=color, linewidth=2,
+        ax2.plot(t_comp, error, '-', color=color, linewidth=1.5, alpha=0.5,
                 label=r'$K=%.3fK_0^*$, $\gamma=%.2f$' % (K/analyzer.K_star_approx, gamma))
     
-    ax1.set_xlabel(r'$t$ [-]', fontsize=12)
-    ax1.set_ylabel(r'$y(t)$ [-]', fontsize=12)
-    ax1.set_title(r'ODE vs Galerkin Solutions for Damped Case', fontsize=12)
-    ax1.legend(fontsize=9, ncol=2)
+    ax1.set_xlabel(r'$t$ [-]', fontsize=18)
+    ax1.set_ylabel(r'$y(t)$ [-]', fontsize=18)
+    ax1.set_title(r'ODE vs Galerkin Solutions for Damped Case', fontsize=18)
+    ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=14, ncol=1)
     ax1.grid(True, alpha=0.7)
     ax1.set_xlim(0, 100)
     
-    ax2.set_xlabel(r'$t$ [-]', fontsize=12)
-    ax2.set_ylabel(r'$|y_{ODE} - y_{Galerkin}|$ [-]', fontsize=12)
-    ax2.set_title(r'Absolute Error Between ODE and Galerkin', fontsize=12)
-    ax2.legend(fontsize=10)
+    ax2.set_xlabel(r'$t$ [-]', fontsize=18)
+    ax2.set_ylabel(r'$|y_{ODE} - y_{Galerkin}|$ [-]', fontsize=18)
+    ax2.set_title(r'Absolute Error Between ODE and Galerkin', fontsize=18)
+    ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=14)
     ax2.grid(True, alpha=0.7)
     ax2.set_xlim(0, 100)
     ax2.set_yscale('log')
